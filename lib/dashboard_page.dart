@@ -5,7 +5,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:url_launcher/link.dart';
 import 'elder_monitoring_page.dart'; // Import the new page
-import 'package:permission_handler/permission_handler.dart'; 
+import 'package:permission_handler/permission_handler.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -28,12 +28,12 @@ class _DashboardPageState extends State<DashboardPage> {
     _initializeNotifications();
     _loadUserData();
   }
-    void _requestNotificationPermission() async {
+
+  void _requestNotificationPermission() async {
     if (await Permission.notification.isDenied) {
       await Permission.notification.request();
     }
   }
-  
 
   // Initialize the local notifications plugin
   void _initializeNotifications() async {
@@ -47,14 +47,14 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   void _showHeartRateNotification(String userName, int heartRate) async {
-    const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
+    const AndroidNotificationDetails androidDetails =
+        AndroidNotificationDetails(
       'heart_rate_channel', // Channel ID
       'Heart Rate Alerts', // Channel name
       channelDescription: 'Alerts when heart rate exceeds 100',
       importance: Importance.max,
       priority: Priority.high,
       ticker: 'ticker',
-      
     );
 
     const NotificationDetails notificationDetails =
@@ -90,6 +90,7 @@ class _DashboardPageState extends State<DashboardPage> {
           setState(() {
             userData?['steps'] = data?['steps'] ?? 'N/A';
             userData?['heartRate'] = data?['heartRate'] ?? 'N/A';
+            userData?['predicate'] = data?['predicate'] ?? 'N/A';
           });
 
           // Check if heart rate exceeds 100 and send notification
@@ -182,6 +183,25 @@ class _DashboardPageState extends State<DashboardPage> {
                   ),
                 ),
               ),
+              const SizedBox(height: 10,),
+                           Card(
+                color: Colors.white.withOpacity(0.2),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: ListTile(
+                  leading:
+                      const Icon(Icons.directions_walk, color: Colors.white),
+                  title: const Text(
+                    'predicate',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  trailing: Text(
+                    '${userData?['predicate'] ?? 'N/A'}',
+                    style: const TextStyle(color: Colors.white, fontSize: 20),
+                  ),
+                ),
+              ),
               const SizedBox(height: 10),
               Card(
                 color: Colors.white.withOpacity(0.2),
@@ -227,17 +247,17 @@ class _DashboardPageState extends State<DashboardPage> {
               child: ListView(
                 scrollDirection: Axis.horizontal,
                 children: [
-                                  Center(
-                  child: Link(
-                    target: LinkTarget.self,
-                    uri: Uri.parse(
-                        'https://ephemeral-dodol-320707.netlify.app/'),
-                    builder: (context, followLink) => ElevatedButton(
-                      child: const Text('Get a Yoga Assistance'),
-                      onPressed: followLink,
+                  Center(
+                    child: Link(
+                      target: LinkTarget.self,
+                      uri: Uri.parse(
+                          'https://ephemeral-dodol-320707.netlify.app/'),
+                      builder: (context, followLink) => ElevatedButton(
+                        child: const Text('Get a Yoga Assistance'),
+                        onPressed: followLink,
+                      ),
                     ),
                   ),
-                ),
                   const SizedBox(width: 10),
                   _buildQuickActionButton(
                     'Health Monitoring',
@@ -250,7 +270,6 @@ class _DashboardPageState extends State<DashboardPage> {
                 ],
               ),
             ),
-            
           ],
         ),
       ),

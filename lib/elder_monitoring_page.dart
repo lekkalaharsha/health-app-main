@@ -86,6 +86,7 @@ class _ElderMonitoringPageState extends State<ElderMonitoringPage> {
                 setState(() {
                   elderData['heartRate'] = data['heartRate'] ?? 'N/A';
                   elderData['steps'] = data['steps'] ?? 'N/A';
+                  elderData['predicate'] = data['predicate'] ?? 'N/A';
                 });
 
                 // Check if heart rate exceeds 100 and send notification
@@ -162,6 +163,27 @@ class _ElderMonitoringPageState extends State<ElderMonitoringPage> {
                         ),
                       ),
                     ),
+                    const SizedBox(height :10),
+                     Card(
+                      color: Colors.white.withOpacity(0.2),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: ListTile(
+                        leading: const Icon(Icons.directions_walk,
+                            color: Colors.white),
+                        title: const Text(
+                          'predicte',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        trailing: Text(
+                          '${elder['predicate'] ?? 'N/A'}',
+                          style: const TextStyle(
+                              color: Colors.white, fontSize: 20),
+                        ),
+                      ),
+                    ),
+
                     const SizedBox(height: 10),
                     Card(
                       color: Colors.white.withOpacity(0.2),
