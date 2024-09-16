@@ -1,10 +1,12 @@
+
+import 'package:amica/constapi.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_gemini/flutter_gemini.dart';
 import 'package:permission_handler/permission_handler.dart'; // Import permission handler
 import 'package:flutter_local_notifications/flutter_local_notifications.dart'; // Import notifications
-import 'package:technoteam/constapi.dart';
+
 import 'login_page.dart';
 import 'exercise_page.dart';
 import 'health_monitoring_page.dart';

@@ -26,9 +26,11 @@ class _DashboardPageState extends State<DashboardPage> {
   void initState() {
     super.initState();
     _initializeNotifications();
+    _requestNotificationPermission();
     _loadUserData();
   }
 
+  // Request notification permission
   void _requestNotificationPermission() async {
     if (await Permission.notification.isDenied) {
       await Permission.notification.request();
@@ -46,12 +48,12 @@ class _DashboardPageState extends State<DashboardPage> {
     await _localNotificationsPlugin.initialize(initializationSettings);
   }
 
+  // Show notification for heart rate exceeding threshold
   void _showHeartRateNotification(String userName, int heartRate) async {
-    const AndroidNotificationDetails androidDetails =
-        AndroidNotificationDetails(
-      'heart_rate_channel', // Channel ID
-      'Heart Rate Alerts', // Channel name
-      channelDescription: 'Alerts when heart rate exceeds 100',
+    const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
+      'heart_rate_channel',
+      'Heart Rate Alerts',
+      channelDescription: 'Alerts when heart rate exceeds 100 bpm',
       importance: Importance.max,
       priority: Priority.high,
       ticker: 'ticker',
@@ -60,13 +62,33 @@ class _DashboardPageState extends State<DashboardPage> {
     const NotificationDetails notificationDetails =
         NotificationDetails(android: androidDetails);
     await _localNotificationsPlugin.show(
-      0, // Notification ID
+      0,
       'Heart Rate Alert',
       '$userName\'s heart rate is $heartRate bpm, which is above 100!',
       notificationDetails,
     );
   }
+  void _showHeartRateNotificationfall(String userName) async {
+    const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
+      'fall ',
+      'fall dection ',
+      channelDescription: 'Alerts when heart rate exceeds 100 bpm',
+      importance: Importance.max,
+      priority: Priority.high,
+      ticker: 'ticker',
+    );
 
+    const NotificationDetails notificationDetails =
+        NotificationDetails(android: androidDetails);
+    await _localNotificationsPlugin.show(
+      1,
+      'fall dection ',
+      '$userName\' fallen  ',
+      notificationDetails,
+    );
+  }
+
+  // Load user data and monitor for health stats
   void _loadUserData() async {
     try {
       user = FirebaseAuth.instance.currentUser;
@@ -79,7 +101,7 @@ class _DashboardPageState extends State<DashboardPage> {
           userData = userDoc.data() as Map<String, dynamic>?;
         });
 
-        // Fetch steps and heart rate for main user from Realtime Database
+        // Fetch steps, heart rate, and predicate from Realtime Database
         _realtimeDatabase
             .child('users')
             .child(userData?['userName'] ?? '')
@@ -92,20 +114,19 @@ class _DashboardPageState extends State<DashboardPage> {
             userData?['heartRate'] = data?['heartRate'] ?? 'N/A';
             userData?['predicate'] = data?['predicate'] ?? 'N/A';
           });
+          if (userData?['predicate'] == 'fall'){
+            _showHeartRateNotificationfall(userData?['userName'] ?? 'User');
+          }
 
-          // Check if heart rate exceeds 100 and send notification
+          // Trigger notification if heart rate exceeds threshold
           if (int.tryParse(userData?['heartRate'] ?? '') != null &&
               int.parse(userData?['heartRate'] ?? '') > 100) {
             _showHeartRateNotification(userData?['userName'] ?? 'User',
                 int.parse(userData?['heartRate'] ?? '0'));
           }
         });
-
-        // Fetch elder details and stats
-        // _fetchElderData();
       }
     } catch (e) {
-      // Handle any errors (e.g., network issues)
       print('Error loading user data: $e');
     }
   }
@@ -115,10 +136,10 @@ class _DashboardPageState extends State<DashboardPage> {
     return Scaffold(
       backgroundColor: Colors.black, // Set background color for better contrast
       appBar: AppBar(
-        title: Text('Dashboard'),
+        title: const Text('Dashboard'),
         actions: [
           IconButton(
-            icon: Icon(Icons.monitor_heart),
+            icon: const Icon(Icons.monitor_heart),
             onPressed: () {
               Navigator.push(
                 context,
@@ -163,7 +184,7 @@ class _DashboardPageState extends State<DashboardPage> {
               ),
             ),
             const SizedBox(height: 10),
-            // Display Steps and Heart Rate
+            // Display Steps
             if (userData != null) ...[
               Card(
                 color: Colors.white.withOpacity(0.2),
@@ -171,31 +192,24 @@ class _DashboardPageState extends State<DashboardPage> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: ListTile(
-                  leading:
-                      const Icon(Icons.directions_walk, color: Colors.white),
-                  title: const Text(
-                    'Distance',
-                    style: TextStyle(color: Colors.white),
-                  ),
+                  leading: const Icon(Icons.directions_walk, color: Colors.white),
+                  title: const Text('Steps', style: TextStyle(color: Colors.white)),
                   trailing: Text(
                     '${userData?['steps'] ?? 'N/A'}',
                     style: const TextStyle(color: Colors.white, fontSize: 20),
                   ),
                 ),
               ),
-              const SizedBox(height: 10,),
-                           Card(
+              const SizedBox(height: 10),
+              // Display Predicate (Fall Detection)
+              Card(
                 color: Colors.white.withOpacity(0.2),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: ListTile(
-                  leading:
-                      const Icon(Icons.directions_walk, color: Colors.white),
-                  title: const Text(
-                    'predicate',
-                    style: TextStyle(color: Colors.white),
-                  ),
+                  leading: const Icon(Icons.error_outline, color: Colors.white),
+                  title: const Text('Fall Detection', style: TextStyle(color: Colors.white)),
                   trailing: Text(
                     '${userData?['predicate'] ?? 'N/A'}',
                     style: const TextStyle(color: Colors.white, fontSize: 20),
@@ -203,6 +217,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 ),
               ),
               const SizedBox(height: 10),
+              // Display Heart Rate
               Card(
                 color: Colors.white.withOpacity(0.2),
                 shape: RoundedRectangleBorder(
@@ -210,17 +225,13 @@ class _DashboardPageState extends State<DashboardPage> {
                 ),
                 child: ListTile(
                   leading: const Icon(Icons.favorite, color: Colors.white),
-                  title: const Text(
-                    'Heart Rate',
-                    style: TextStyle(color: Colors.white),
-                  ),
+                  title: const Text('Heart Rate', style: TextStyle(color: Colors.white)),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
                         '${userData?['heartRate'] ?? 'N/A'} bpm',
-                        style:
-                            const TextStyle(color: Colors.white, fontSize: 20),
+                        style: const TextStyle(color: Colors.white, fontSize: 20),
                       ),
                       const SizedBox(width: 10),
                       if (int.tryParse(userData?['heartRate'] ?? '') != null &&
@@ -253,7 +264,7 @@ class _DashboardPageState extends State<DashboardPage> {
                       uri: Uri.parse(
                           'https://ephemeral-dodol-320707.netlify.app/'),
                       builder: (context, followLink) => ElevatedButton(
-                        child: const Text('Get a Yoga Assistance'),
+                        child: const Text('Get Yoga Assistance'),
                         onPressed: followLink,
                       ),
                     ),
@@ -266,7 +277,6 @@ class _DashboardPageState extends State<DashboardPage> {
                       Navigator.pushNamed(context, '/health');
                     },
                   ),
-                  // Add more quick action buttons here
                 ],
               ),
             ),

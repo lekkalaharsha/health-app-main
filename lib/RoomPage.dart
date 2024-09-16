@@ -1,6 +1,8 @@
+
+import 'package:amica/AddRoomForm.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:technoteam/AddRoomForm.dart'; // Import the AddRoomForm
+ // Import the AddRoomForm
 
 class RoomPage extends StatelessWidget {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;

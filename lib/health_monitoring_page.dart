@@ -14,6 +14,7 @@ class _HealthMonitoringPageState extends State<HealthMonitoringPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black26,
       appBar: AppBar(
         title: Text('Health Monitoring Data'),
       ),

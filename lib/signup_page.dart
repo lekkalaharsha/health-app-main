@@ -1,9 +1,11 @@
+
+import 'package:amica/home_page.dart';
+import 'package:amica/login_page.dart';
+import 'package:amica/utils/colors_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart'; // Ensure you import Firestore
-import 'package:technoteam/home_page.dart';
-import 'package:technoteam/login_page.dart';
-import 'package:technoteam/utils/colors_utils.dart';
+
 import 'package:firebase_database/firebase_database.dart';
 
 class SignupPage extends StatefulWidget {
@@ -93,7 +95,7 @@ class _SignupPageState extends State<SignupPage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                logoWidget('img/img.png'), // Custom logo widget
+                logoWidget('assets/images/app_icon.jpg'), // Custom logo widget
                 const SizedBox(height: 30),
                 TextField(
                   controller: _emailController,

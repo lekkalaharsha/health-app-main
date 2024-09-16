@@ -57,7 +57,25 @@ class _ElderMonitoringPageState extends State<ElderMonitoringPage> {
       notificationDetails,
     );
   }
+void _showHeartRateNotificationfall(String userName) async {
+    const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
+      'fall ',
+      'fall dection ',
+      channelDescription: 'Alerts when heart rate exceeds 100 bpm',
+      importance: Importance.max,
+      priority: Priority.high,
+      ticker: 'ticker',
+    );
 
+    const NotificationDetails notificationDetails =
+        NotificationDetails(android: androidDetails);
+    await _localNotificationsPlugin.show(
+      1,
+      'fall dection ',
+      '$userName\' fallen  ',
+      notificationDetails,
+    );
+  }
   void _loadElderData() async {
     try {
       user = FirebaseAuth.instance.currentUser;
@@ -88,6 +106,10 @@ class _ElderMonitoringPageState extends State<ElderMonitoringPage> {
                   elderData['steps'] = data['steps'] ?? 'N/A';
                   elderData['predicate'] = data['predicate'] ?? 'N/A';
                 });
+                if (elderData['predicate']== 'fall') 
+                {
+                  _showHeartRateNotificationfall(elderData['name'] ?? 'Elder');
+                }
 
                 // Check if heart rate exceeds 100 and send notification
                 if (int.tryParse(elderData['heartRate'] ?? '') != null &&

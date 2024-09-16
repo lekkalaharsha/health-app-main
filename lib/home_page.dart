@@ -1,8 +1,10 @@
+
+import 'package:amica/RoomPage.dart';
+import 'package:amica/SchedulePage.dart';
+import 'package:amica/chatscreen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:technoteam/RoomPage.dart';
-import 'package:technoteam/SchedulePage.dart';
-import 'package:technoteam/chatscreen.dart';
+
 import 'login_page.dart';
 import 'dashboard_page.dart';
 import 'exercise_page.dart';
