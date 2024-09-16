@@ -1,12 +1,9 @@
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_gemini/flutter_gemini.dart';
 import 'package:permission_handler/permission_handler.dart'; // Import permission handler
 import 'package:flutter_local_notifications/flutter_local_notifications.dart'; // Import notifications
-import 'package:flutter_background_service/flutter_background_service.dart'; // Import background service
-import 'package:workmanager/workmanager.dart'; // Import workmanager
 import 'package:technoteam/constapi.dart';
 import 'login_page.dart';
 import 'exercise_page.dart';
@@ -14,15 +11,12 @@ import 'health_monitoring_page.dart';
 import 'home_page.dart';
 
 // Initialize notifications
-FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-
-  // Initialize background service and workmanager
-  await initializeBackgroundService();
-  Workmanager().initialize(callbackDispatcher, isInDebugMode: true);
 
   // Initialize Gemini API
   Gemini.init(apiKey: GEMINI_API_KEY);
@@ -44,86 +38,6 @@ Future<void> initializeNotifications() async {
   await flutterLocalNotificationsPlugin.initialize(initializationSettings);
 }
 
-// Background Service Setup
-Future<void> initializeBackgroundService() async {
-  final service = FlutterBackgroundService();
-  await service.configure(
-    androidConfiguration: AndroidConfiguration(
-      onStart: onStart, // Entry point when service starts
-      isForegroundMode: true, // Required for foreground execution
-      autoStart: true,
-      notificationChannelId: 'background_service_channel',
-      initialNotificationTitle: 'Background Service',
-      initialNotificationContent: 'Monitoring heart rate in the background',
-    ),
-    iosConfiguration: IosConfiguration(
-      onForeground: onStart,
-      onBackground: (service) => true,
-    ),
-  );
-
-  service.startService();
-}
-
-// The callback that runs in the background
-void onStart(ServiceInstance service) async {
-  // Periodically check heart rate every 15 minutes
-  service.on('monitorHeartRate').listen((event) async {
-    await monitorHeartRate();
-  });
-  service.invoke('monitorHeartRate'); // Run the first check
-}
-
-// Monitor Heart Rate Function
-Future<void> monitorHeartRate() async {
-  User? user = FirebaseAuth.instance.currentUser;
-  if (user != null) {
-    final DatabaseReference _realtimeDatabase = FirebaseDatabase.instance.ref();
-    _realtimeDatabase
-        .child('users')
-        .child(user.uid) // Replace with relevant user data
-        .child('stats')
-        .child('heartRate')
-        .onValue
-        .listen((event) {
-      final heartRate = event.snapshot.value as int?;
-      if (heartRate != null && heartRate > 100) {
-        _showHeartRateNotification(heartRate);
-      }
-    });
-  }
-}
-
-// Show heart rate notification
-Future<void> _showHeartRateNotification(int heartRate) async {
-  const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
-    'heart_rate_channel',
-    'Heart Rate Alerts',
-    channelDescription: 'Alerts when heart rate exceeds 100',
-    importance: Importance.max,
-    priority: Priority.high,
-  );
-
-  const NotificationDetails notificationDetails =
-      NotificationDetails(android: androidDetails);
-
-  await flutterLocalNotificationsPlugin.show(
-    0,
-    'Heart Rate Alert',
-    'Your heart rate is $heartRate bpm, which is above 100!',
-    notificationDetails,
-  );
-}
-
-// Workmanager Callback Dispatcher
-void callbackDispatcher() {
-  Workmanager().executeTask((task, inputData) async {
-    await monitorHeartRate(); // Perform heart rate monitoring
-    return Future.value(true);
-  });
-}
-
-// Main App Entry
 class MyApp extends StatefulWidget {
   @override
   _MyAppState createState() => _MyAppState();
@@ -144,13 +58,13 @@ class _MyAppState extends State<MyApp> {
     if (status.isDenied) {
       // If denied, request permission
       PermissionStatus newStatus = await Permission.notification.request();
-
+      
       if (newStatus.isGranted) {
         print('Notification permission granted');
       } else if (newStatus.isPermanentlyDenied) {
         // Handle the case where the permission is permanently denied
         print('Notification permission permanently denied. Please enable it in settings.');
-        openAppSettings(); // Opens the app's settings page for manual permission enabling
+        openAppSettings();
       }
     } else if (status.isGranted) {
       print('Notification permission already granted');
